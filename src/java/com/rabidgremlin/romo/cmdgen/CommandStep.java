@@ -51,7 +51,27 @@ public class CommandStep implements SequenceStep
   @Override
   public int getLengthInFrames()
   {
-    return 12 * getFramesPerHalfClock() * 2;
+    // 12 bits * size of half clock * 2 (so that size of clock signal) * 2 (doubled for lead in)
+    return 12 * getFramesPerHalfClock() * 2 * 2;
+  }
+
+  /**
+   * Fills the buffer with a low signal as a lead in.
+   * 
+   * @param buffer
+   *          The buffer to fill.
+   */
+  private void fillLeadIn(double[][] buffer)
+  {
+    // lead in is half the size of the calculated frame length
+    int leadInSize = getLengthInFrames() / 2;
+
+    // fill with low
+    for (int loop = 0; loop < leadInSize; loop++)
+    {
+      buffer[0][loop] = -1;
+      buffer[1][loop] = -1;
+    }
   }
 
   /**
@@ -65,8 +85,8 @@ public class CommandStep implements SequenceStep
     // get number of frames for half a clock signal
     int framesPerHalfClock = getFramesPerHalfClock();
 
-    // current write position in buffer
-    int bufferPos = 0;
+    // current write position in buffer. Start after lead in
+    int bufferPos = getLengthInFrames() / 2;
 
     // clock signal consists of 12 high and low alternations
     for (int loop = 0; loop < 24; loop++)
@@ -90,6 +110,9 @@ public class CommandStep implements SequenceStep
     // create a buffer to hold data
     double[][] buffer = new double[2][getLengthInFrames()];
 
+    // write lead in
+    fillLeadIn(buffer);
+
     // populate the clock data
     fillClock(buffer);
 
@@ -97,14 +120,14 @@ public class CommandStep implements SequenceStep
     // figure out frames per command bit
     int framesPerCommandBit = getFramesPerHalfClock() * 2;
 
-    // current write pos in buffer
-    int bufferPos = 0;
+    // current write position in buffer. Start after lead in
+    int bufferPos = getLengthInFrames() / 2;
 
     // generate the data for each of the 12 command bits
     for (int loop = 0; loop < 12; loop++)
     {
       // are we writing hi or mid ?
-      double commandBit = commandBits.charAt(loop) == '1' ? 1 : 0;
+      double commandBit = commandBits.charAt(loop) == '1' ? 1 : -1;
 
       // write out number of frames based on msPerCommandBit
       for (int frameLoop = 0; frameLoop < framesPerCommandBit; frameLoop++)
