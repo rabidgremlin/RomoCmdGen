@@ -16,6 +16,8 @@ public class CommandGenerator
 {
   public final static String LEFT_FORWARD_FULL = "001111111111";
   public final static String RIGHT_FORWARD_FULL = "010000000001";
+  public final static String LEFT_REVERSE_FULL = "001000000001";
+  public final static String RIGHT_REVERSE_FULL = "010111111111";
   public final static String LEFT_STOP = "001100000000";
   public final static String RIGHT_STOP = "010100000000";
 
